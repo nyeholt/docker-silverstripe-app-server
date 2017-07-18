@@ -1,0 +1,51 @@
+#!/bin/bash
+set -e
+
+# See https://github.com/bylexus/docker-apache-php55/blob/master/run
+# see https://github.com/kojiromike/docker-magento/blob/master/apache/start_safe_perms
+
+
+
+PHP_ERROR_REPORTING=${PHP_ERROR_REPORTING:-"E_ALL & ~E_DEPRECATED"}
+sed -ri 's/^display_errors\s*=\s*Off/display_errors = On/g' /etc/php5/apache2/php.ini
+sed -ri 's/^display_errors\s*=\s*Off/display_errors = On/g' /etc/php5/cli/php.ini
+sed -ri "s/^error_reporting\s*=.*$//g" /etc/php5/apache2/php.ini
+sed -ri "s/^error_reporting\s*=.*$//g" /etc/php5/cli/php.ini
+echo "error_reporting = $PHP_ERROR_REPORTING" >> /etc/php5/apache2/php.ini
+echo "error_reporting = $PHP_ERROR_REPORTING" >> /etc/php5/cli/php.ini
+
+
+
+# Creates a 'hostuser' user/group that executes apache as the owner of the 
+# volume mounted at /var/www/dynamic. This is by default www-data,
+# but if someone mounts a volume there, it'll be the host user. 
+main() {
+    local owner group owner_id group_id tmp
+    read owner group owner_id group_id < <(stat -c '%U %G %u %g' /var/www/dynamic)
+    if [[ $owner = UNKNOWN ]]; then
+        owner=hostuser
+        if [[ $group = UNKNOWN ]]; then
+            group=$owner
+            addgroup --system --gid "$group_id" "$group"
+        fi
+        adduser --system --uid=$owner_id --gid=$group_id "$owner"
+    fi
+    tmp=/tmp/$RANDOM
+    {
+        echo "User $owner"
+        echo "Group $group"
+        grep -v '^User' /etc/apache2/apache2.conf |
+            grep -v '^Group'
+    } >> "$tmp" &&
+    cat "$tmp" > /etc/apache2/apache2.conf &&
+    rm "$tmp"
+    # Not volumes, so need to be chowned
+    chown -R "$owner:$group" /var/{lock,log,run}/apache*
+    chown -R "$owner:$group" /var/www/dynamic
+    
+}
+
+main 
+
+
+source /etc/apache2/envvars && exec /usr/sbin/apache2 -DFOREGROUND
