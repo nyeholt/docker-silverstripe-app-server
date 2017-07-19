@@ -1,4 +1,4 @@
-# JS build tools
+# Apache based SilverStripe app container
 
 Ubuntu based (for convenience...)
 
@@ -42,6 +42,20 @@ docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql \
   -v $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK) -e SSH_AUTH_SOCK=$SSH_AUTH_SOCK \
   symbiote:ss-dev
 ```
+
+## Volume mappings
+
+The one required mapping is your host file system's project directory to 
+/var/www/dynamic in the container. In addition, the following are useful for
+improved performance
+
+* `-v $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK)` Maps the host's 
+  ssh-agent local socket to the container's socket dir; make sure ssh-agent is
+  started on the host. Use with the accompanying environment var 
+  `-e SSH_AUTH_SOCK=$SSH_AUTH_SOCK`
+* `-v ~/composer-cache:/root/.composer/cache` Share composer cache locations across
+  multiple contains with a folder on the host
+
 
 Then hit http://sub-folder.projectdir.symlocal/ from the host. 
 
