@@ -48,12 +48,13 @@ docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql \
 Run the following command in Windows Powershell.
 
 ```
-docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql -v /c/Users/your_username_here/www:/var/www/dynamic -v /c/Users/your_username_here/.ssh:/home/your_username_here/.ssh symbiote/ss-dev
+docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql -v /c/Users/your_username_here/www:/var/www/dynamic -v /c/Users/your_username_here/.ssh:/root/.ssh/keys symbiote/ss-dev
 ```
 
 **Warnings:**
 - Running in Git Bash caused errors to occur when the container installs Composer, PowerShell just worked.
 - I placed my 'www' in `C:/Users/your_username_here` as users reported weird permission issues. Not sure if this has been fixed in later Docker versions.
+- SSH keys are copied to /root/.ssh/keys on remote to avoid permission issues blocking use of keys. They are copied to /root/.ssh/ by the startup script.
 
 ## Volume mappings
 
