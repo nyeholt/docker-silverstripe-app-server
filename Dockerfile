@@ -32,7 +32,6 @@ COPY apache_dynamic_vhosts /etc/apache2/sites-available/000-default.conf
 COPY startup /usr/local/bin/startup
 RUN chmod +x /usr/local/bin/startup
 
-
 EXPOSE 80
 EXPOSE 443
 
@@ -42,6 +41,8 @@ ADD install-composer.sh /tmp/
 RUN chmod +x /tmp/install-composer.sh && /tmp/install-composer.sh && composer global require phing/phing
 RUN echo "export PATH=\$PATH:~/.composer/vendor/bin/" >> ~/.bashrc
 
+# The path that will be used to make Apache run under that user
+ENV VOLUME_PATH /var/www/dynamic
 
 # Debugger settings. Need to split to a developer's dockerfile
 ENV XDEBUGINI_PATH=/etc/php5/mods-available/xdebug.ini
@@ -51,5 +52,7 @@ RUN echo "xdebug.remote_enable=on" >> $XDEBUGINI_PATH \
  && echo "xdebug.remote_handler=dbgp" >> $XDEBUGINI_PATH \
  && echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $XDEBUGINI_PATH
 
+# Set start directory
+WORKDIR /var/www/dynamic
 
 CMD ["/usr/local/bin/startup"]

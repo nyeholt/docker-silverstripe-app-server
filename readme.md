@@ -20,7 +20,7 @@ temporary solution.
 Build an image - `docker build -t "symbiote/ss-dev" .`
 
 
-## Running 
+## Running on Linux
 
 Run a new container with your local www directory bound to /var/www/dynamic. 
 Apache resolves URLs to virtual hosts in the form
@@ -40,8 +40,20 @@ and bind the socket in
 docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql \
   -v /home/{user}/www:/var/www/dynamic \
   -v $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK) -e SSH_AUTH_SOCK=$SSH_AUTH_SOCK \
-  symbiote:ss-dev
+  symbiote/ss-dev
 ```
+
+## Running on Windows
+
+Run the following command in Windows Powershell.
+
+```
+docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql -v /c/Users/your_username_here/www:/var/www/dynamic -v /c/Users/your_username_here/.ssh:/home/your_username_here/.ssh symbiote/ss-dev
+```
+
+**Warnings:**
+- Running in Git Bash caused errors to occur when the container installs Composer, PowerShell just worked.
+- I placed my 'www' in `C:/Users/your_username_here` as users reported weird permission issues. Not sure if this has been fixed in later Docker versions.
 
 ## Volume mappings
 
@@ -63,10 +75,7 @@ Then hit http://sub-folder.projectdir.symlocal/ from the host.
 
 To run things from the CLI, you can run 
 
-`docker exec -it webserver`
-
-This will let you use php-cli against the same project folders
-
+`docker exec -it webserver bash`
 
 # Configuration
 
