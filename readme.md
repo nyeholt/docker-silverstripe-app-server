@@ -47,14 +47,46 @@ docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql \
 
 Run the following command in Windows Powershell.
 
-```
-docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql -v /c/Users/your_username_here/www:/var/www/dynamic -v /c/Users/your_username_here/.ssh:/root/.ssh/keys symbiote/ss-dev
-```
+`docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql -v /c/Users/your_username_here/www:/var/www/dynamic -v /c/Users/your_username_here/.ssh:/root/.ssh/keys symbiote/ss-dev`
 
 **Warnings:**
 - Running in Git Bash caused errors to occur when the container installs Composer, PowerShell just worked.
 - I placed my 'www' in `C:/Users/your_username_here` as users reported weird permission issues. Not sure if this has been fixed in later Docker versions.
 - SSH keys are copied to /root/.ssh/keys on remote to avoid permission issues blocking use of keys. They are copied to /root/.ssh/ by the startup script.
+
+## Run / Configure MySQL
+
+Setup a MySQL container by running the following
+
+`docker run -d --name mysql-5-6 -e MYSQL_ROOT_PASSWORD=password mysql:5.6`
+
+Then in your local.conf.php files, set it up like so below.
+
+```
+<?php
+
+/*
+ * Include any local instance specific configuration here - typically
+ * this includes any database settings, email settings, etc that change
+ * between installations. 
+ */
+
+global $databaseConfig;
+$databaseConfig = array(
+	"type" => "MySQLDatabase",
+	"server" => "mysql", // The MySQL containers hostname
+	"username" => "root",
+	"password" => "password",
+	"database" => "silverstripe",
+);
+
+
+Security::setDefaultAdmin('admin', 'admin');
+// Email::setAdminEmail('admin@example.org');
+define('SS_LOG_FILE', dirname(__FILE__).'/'.basename(dirname(dirname(__FILE__))).'.log');
+
+Director::set_environment_type('dev');
+```
 
 ## Volume mappings
 
