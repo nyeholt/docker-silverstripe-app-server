@@ -93,7 +93,7 @@ C:\Users\your_username_here\www\tools\adminer      -> adminer.tools.symlocal
 127.0.0.1     adminer.tools.symlocal
 ```
 
-**Share SSH keys from host to container: (ie. Support private Git repos)**
+**INSECURE: Share SSH keys from host to container: (ie. Support private Git repos)**
 
 First thing to note, this isn't at all very secure AND you should definitely not build any images from
 a container that contains your SSH keys. This is a stopgap solution until we find something better.
