@@ -16,11 +16,18 @@ RUN apt-get update  && apt-get install -y \
     wget \ 
     mysql-client \
     php5 php5-cli php5-sqlite  php5-tidy php5-mysql php5-ldap php5-redis php5-json php5-mcrypt  php5-curl  php5-xdebug  php5-pspell  php5-gd  php5-dev \
+    openjdk-7-jdk \
  && php5enmod mcrypt \
  && rm -rf /var/lib/apt/lists/*
 
+# Setup Java / Solr config
+RUN mkdir /usr/java && ln -s /usr/lib/jvm/java-7-openjdk-amd64 /usr/java/default
+EXPOSE 8983
+
+# Setup apache modules
 RUN a2enmod rewrite && a2enmod headers && a2enmod vhost_alias && a2enmod expires 
 
+# Set timezone
 RUN echo 'date.timezone = Australia/Melbourne' > /etc/php5/apache2/conf.d/date.ini
 RUN echo 'date.timezone = Australia/Melbourne' > /etc/php5/cli/conf.d/date.ini
 

@@ -141,6 +141,13 @@ define('SS_LOG_FILE', dirname(__FILE__).'/'.basename(dirname(dirname(__FILE__)))
 Director::set_environment_type('dev');
 ```
 
+## Solr
+
+To access the Solr collection interface, go to:
+```
+http://127.0.0.1:8983/solr
+```
+
 # Old Information (needs to be re-written)
 
 ## Volume mappings
