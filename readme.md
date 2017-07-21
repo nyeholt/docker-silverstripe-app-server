@@ -15,52 +15,84 @@ temporary solution.
 
 # Usage
 
-## Building
+## Build an image
 
-Build an image - `docker build -t "symbiote/ss-dev" .`
+`docker build -t "symbiote/ss-dev" .`
 
+NOTE: Don't forget the "." at the end, this is to build in the current directory.
 
-## Running on Linux
+## Configure your docker-compose YML
 
-Run a new container with your local www directory bound to /var/www/dynamic. 
-Apache resolves URLs to virtual hosts in the form
+Uncomment the "volumes" config options best suited to your operating sytem.
+Replace the text "your_username_here" with your username.
 
-`{sub-domain}.{top-domain}.symlocal`
+For Linux users, if you want to use SSH from within the container, run ssh-agent on your host 
+and bind the socket in.
 
-to
+Once the below file is configured, simply run:
+`docker-compose up`
 
-`/var/www/dynamic/{top-domain}/{sub-domain}`
+You will get something like:
+>Starting nyeholt_webserver_1 ...
+Starting nyeholt_mysql_1 ...
 
-Expose a separate mysql docker if you wish to develop with mysql. 
-
-If you want to use SSH from within the container, run ssh-agent on your host 
-and bind the socket in
+You can use these names to use CLI in the container like so:
+`docker exec -it nyeholt_webserver_1 bash`
+or
+`docker exec -it nyeholt_mysql_1 bash`
 
 ```
-docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql \
-  -v /home/{user}/www:/var/www/dynamic \
-  -v $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK) -e SSH_AUTH_SOCK=$SSH_AUTH_SOCK \
-  symbiote/ss-dev
+version: '2'
+services:
+  webserver:
+    image: "symbiote/ss-dev"
+    ports:
+      - "80:80"
+    environment:
+      # *nix /.ssh/ folder location
+      - SSH_AUTH_SOCK
+    volumes:
+      # Example *nix configuration
+      #- /home/your_username_here/www:/var/www/dynamic
+      #- $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK)
+
+      # Example Windows configuration
+      #- /c/Users/your_username_here/www:/var/www/dynamic
+      #- /c/Users/your_username_here/.ssh:/root/.ssh/keys
+  mysql:
+    # MySQL 5.6
+    # https://github.com/docker-library/mysql/tree/master/5.6
+    image: "mysql:5.6"
+    #volumes:
+      # Sync folder with .sql dumps
+      #- /c/MySQLDatabases/unzipped:/docker-entrypoint-initdb.d
+    environment:
+        MYSQL_ROOT_PASSWORD: "password"
 ```
 
-## Running on Windows
+## Windows-specific Information
 
-Run the following command in Windows Powershell.
 
-`docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql -v /c/Users/your_username_here/www:/var/www/dynamic -v /c/Users/your_username_here/.ssh:/root/.ssh/keys symbiote/ss-dev`
+**Example of directories mapping to host:**
+```
+C:\Users\your_username_here\www\projects\facebook  -> facebook.projects.symlocal
+C:\Users\your_username_here\www\tools\adminer      -> adminer.tools.symlocal
+```
+
+**Example hosts file in C:\Windows\System32\drivers\etc\hosts**
+```
+127.0.0.1     facebook.projects.symlocal
+127.0.0.1     adminer.tools.symlocal
+```
 
 **Warnings:**
 - Running in Git Bash caused errors to occur when the container installs Composer, PowerShell just worked.
 - I placed my 'www' in `C:/Users/your_username_here` as users reported weird permission issues. Not sure if this has been fixed in later Docker versions.
 - SSH keys are copied to /root/.ssh/keys on remote to avoid permission issues blocking use of keys. They are copied to /root/.ssh/ by the startup script.
 
-## Run / Configure MySQL
+## Configure MySQL
 
-Setup a MySQL container by running the following
-
-`docker run -d --name mysql-5-6 -e MYSQL_ROOT_PASSWORD=password mysql:5.6`
-
-Then in your local.conf.php files, set it up like so below.
+In your local.conf.php files, set it up like so below.
 
 ```
 <?php
@@ -80,13 +112,13 @@ $databaseConfig = array(
 	"database" => "silverstripe",
 );
 
-
 Security::setDefaultAdmin('admin', 'admin');
 // Email::setAdminEmail('admin@example.org');
 define('SS_LOG_FILE', dirname(__FILE__).'/'.basename(dirname(dirname(__FILE__))).'.log');
-
 Director::set_environment_type('dev');
 ```
+
+# Old Information (needs to be re-written)
 
 ## Volume mappings
 
@@ -103,12 +135,6 @@ improved performance
 
 
 Then hit http://sub-folder.projectdir.symlocal/ from the host. 
-
-## CLI access
-
-To run things from the CLI, you can run 
-
-`docker exec -it webserver bash`
 
 # Configuration
 
