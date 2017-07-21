@@ -30,16 +30,24 @@ For Linux users, if you want to use SSH from within the container, run ssh-agent
 and bind the socket in.
 
 Once the below file is configured, simply run:
-`docker-compose up`
+```
+docker-compose up
+```
 
 You will get something like:
->Starting nyeholt_webserver_1 ...
+```
+Starting nyeholt_webserver_1 ...
 Starting nyeholt_mysql_1 ...
+```
 
 You can use these names to use CLI in the container like so:
-`docker exec -it nyeholt_webserver_1 bash`
+```
+docker exec -it nyeholt_webserver_1 bash
+```
 or
-`docker exec -it nyeholt_mysql_1 bash`
+```
+docker exec -it nyeholt_mysql_1 bash
+```
 
 ```
 version: '2'
@@ -58,7 +66,7 @@ services:
 
       # Example Windows configuration
       #- /c/Users/your_username_here/www:/var/www/dynamic
-      #- /c/Users/your_username_here/.ssh:/root/.ssh/keys
+      #- /c/Users/your_username_here/AppData/Local/Composer:/root/.composer/cache
   mysql:
     # MySQL 5.6
     # https://github.com/docker-library/mysql/tree/master/5.6
@@ -83,6 +91,21 @@ C:\Users\your_username_here\www\tools\adminer      -> adminer.tools.symlocal
 ```
 127.0.0.1     facebook.projects.symlocal
 127.0.0.1     adminer.tools.symlocal
+```
+
+**Share SSH keys from host to container: (ie. Support private Git repos)**
+
+First thing to note, this isn't at all very secure AND you should definitely not build any images from
+a container that contains your SSH keys. This is a stopgap solution until we find something better.
+
+The SSH keys will get copied out of `/root/.ssh/keys` to `/root/.ssh` and the permissions will be fixed.
+
+```
+version: '2'
+services:
+  webserver:
+    volumes:
+      # -/c/Users/your_username_here/.ssh:/root/.ssh/keys
 ```
 
 **Warnings:**

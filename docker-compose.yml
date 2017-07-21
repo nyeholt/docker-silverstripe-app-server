@@ -15,7 +15,6 @@ services:
 
       # Example Windows configuration
       #- /c/Users/your_username_here/www:/var/www/dynamic
-      #- /c/Users/your_username_here/.ssh:/root/.ssh/keys
       #- /c/Users/your_username_here/AppData/Local/Composer:/root/.composer/cache
   mysql:
     # MySQL 5.6
