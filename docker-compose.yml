@@ -4,9 +4,9 @@ services:
     image: "symbiote/ss-dev"
     ports:
       - "80:80"
-    environment:
-      # *nix /.ssh/ folder location
-      - SSH_AUTH_SOCK
+    #environment:
+      # *nix /.ssh/ socket
+      #- SSH_AUTH_SOCK
     volumes:
       # Example *nix configuration
       #- /home/your_username_here/www:/var/www/dynamic
