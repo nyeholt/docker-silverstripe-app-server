@@ -148,6 +148,32 @@ To access the Solr collection interface, go to:
 http://127.0.0.1:8983/solr
 ```
 
+## Import large MySQL databases
+
+You may get an error like "MySQL server has gone away" or similar if you try to import a database with
+something like:
+
+```
+mysql -u root -p mydatabasenamehere < "/var/www/dynamic/databases/my_database_dump.sql"
+```
+
+The easiest way to work around this is to connect to the server and import via that interface.
+
+Step 1: Connect
+```
+mysql -u root -p
+```
+
+Step 2: Set database
+```
+USE mydatabasenamehere;
+```
+
+Step 3: Import database
+```
+SOURCE /var/www/dynamic/databases/my_database_dump.sql;
+```
+
 # Old Information (needs to be re-written)
 
 ## Volume mappings
