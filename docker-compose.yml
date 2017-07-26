@@ -1,0 +1,28 @@
+version: '2'
+services:
+  webserver:
+    image: "symbiote/ss-dev"
+    ports:
+      - "80:80"
+      - "8983:8983"
+    #environment:
+      # *nix /.ssh/ socket
+      #- SSH_AUTH_SOCK
+    volumes:
+      # Example *nix configuration
+      #- /home/your_username_here/www:/var/www/dynamic
+      #- $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK)
+      #- ~/composer-cache:/root/.composer/cache
+
+      # Example Windows configuration
+      #- /c/Users/your_username_here/www:/var/www/dynamic
+      #- /c/Users/your_username_here/AppData/Local/Composer:/root/.composer/cache
+  mysql:
+    # MySQL 5.6
+    # https://github.com/docker-library/mysql/tree/master/5.6
+    image: "mysql:5.6"
+    #volumes:
+      # Sync folder with .sql dumps
+      #- /c/MySQLDatabases/unzipped:/docker-entrypoint-initdb.d
+    environment:
+        MYSQL_ROOT_PASSWORD: "password"

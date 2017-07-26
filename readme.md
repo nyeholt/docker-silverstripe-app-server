@@ -15,33 +15,166 @@ temporary solution.
 
 # Usage
 
-## Building
+## Build an image
 
-Build an image - `docker build -t "symbiote/ss-dev" .`
+`docker build -t "symbiote/ss-dev" .`
 
+NOTE: Don't forget the "." at the end, this is to build in the current directory.
 
-## Running 
+## Configure your docker-compose YML
 
-Run a new container with your local www directory bound to /var/www/dynamic. 
-Apache resolves URLs to virtual hosts in the form
+Uncomment the "volumes" config options best suited to your operating sytem.
+Replace the text "your_username_here" with your username.
 
-`{sub-domain}.{top-domain}.symlocal`
+For Linux users, if you want to use SSH from within the container, run ssh-agent on your host 
+and bind the socket in.
 
-to
+Once the below file is configured, simply run:
+```
+docker-compose up
+```
 
-`/var/www/dynamic/{top-domain}/{sub-domain}`
+You will get something like:
+```
+Starting nyeholt_webserver_1 ...
+Starting nyeholt_mysql_1 ...
+```
 
-Expose a separate mysql docker if you wish to develop with mysql. 
-
-If you want to use SSH from within the container, run ssh-agent on your host 
-and bind the socket in
+You can use these names to use CLI in the container like so:
+```
+docker exec -it nyeholt_webserver_1 bash
+```
+or
+```
+docker exec -it nyeholt_mysql_1 bash
+```
 
 ```
-docker run -d --name webserver -p 80:80 --link mysql-5-6:mysql \
-  -v /home/{user}/www:/var/www/dynamic \
-  -v $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK) -e SSH_AUTH_SOCK=$SSH_AUTH_SOCK \
-  symbiote:ss-dev
+version: '2'
+services:
+  webserver:
+    image: "symbiote/ss-dev"
+    ports:
+      - "80:80"
+    environment:
+      # *nix /.ssh/ folder location
+      - SSH_AUTH_SOCK
+    volumes:
+      # Example *nix configuration
+      #- /home/your_username_here/www:/var/www/dynamic
+      #- $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK)
+
+      # Example Windows configuration
+      #- /c/Users/your_username_here/www:/var/www/dynamic
+      #- /c/Users/your_username_here/AppData/Local/Composer:/root/.composer/cache
+  mysql:
+    # MySQL 5.6
+    # https://github.com/docker-library/mysql/tree/master/5.6
+    image: "mysql:5.6"
+    #volumes:
+      # Sync folder with .sql dumps
+      #- /c/MySQLDatabases/unzipped:/docker-entrypoint-initdb.d
+    environment:
+        MYSQL_ROOT_PASSWORD: "password"
 ```
+
+## Windows-specific Information
+
+
+**Example of directories mapping to host:**
+```
+C:\Users\your_username_here\www\projects\facebook  -> facebook.projects.symlocal
+C:\Users\your_username_here\www\tools\adminer      -> adminer.tools.symlocal
+```
+
+**Example hosts file in C:\Windows\System32\drivers\etc\hosts**
+```
+127.0.0.1     facebook.projects.symlocal
+127.0.0.1     adminer.tools.symlocal
+```
+
+**INSECURE: Share SSH keys from host to container: (ie. Support private Git repos)**
+
+First thing to note, this isn't at all very secure AND you should definitely not build any images from
+a container that contains your SSH keys. This is a stopgap solution until we find something better.
+
+The SSH keys will get copied out of `/root/.ssh/keys` to `/root/.ssh` and the permissions will be fixed.
+
+```
+version: '2'
+services:
+  webserver:
+    volumes:
+      # -/c/Users/your_username_here/.ssh:/root/.ssh/keys
+```
+
+**Warnings:**
+- Running in Git Bash caused errors to occur when the container installs Composer, PowerShell just worked.
+- I placed my 'www' in `C:/Users/your_username_here` as users reported weird permission issues. Not sure if this has been fixed in later Docker versions.
+- SSH keys are copied to /root/.ssh/keys on remote to avoid permission issues blocking use of keys. They are copied to /root/.ssh/ by the startup script.
+
+## Configure MySQL
+
+In your local.conf.php files, set it up like so below.
+
+```
+<?php
+
+/*
+ * Include any local instance specific configuration here - typically
+ * this includes any database settings, email settings, etc that change
+ * between installations. 
+ */
+
+global $databaseConfig;
+$databaseConfig = array(
+	"type" => "MySQLDatabase",
+	"server" => "mysql", // The MySQL containers hostname
+	"username" => "root",
+	"password" => "password",
+	"database" => "silverstripe",
+);
+
+Security::setDefaultAdmin('admin', 'admin');
+// Email::setAdminEmail('admin@example.org');
+define('SS_LOG_FILE', dirname(__FILE__).'/'.basename(dirname(dirname(__FILE__))).'.log');
+Director::set_environment_type('dev');
+```
+
+## Solr
+
+To access the Solr collection interface, go to:
+```
+http://127.0.0.1:8983/solr
+```
+
+## Import large MySQL databases
+
+You may get an error like "MySQL server has gone away" or similar if you try to import a database with
+something like:
+
+```
+mysql -u root -p mydatabasenamehere < "/var/www/dynamic/databases/my_database_dump.sql"
+```
+
+The easiest way to work around this is to connect to the server and import via that interface.
+
+Step 1: Connect
+```
+mysql -u root -p
+```
+
+Step 2: Set database
+```
+USE mydatabasenamehere;
+```
+
+Step 3: Import database
+```
+SOURCE /var/www/dynamic/databases/my_database_dump.sql;
+```
+
+# Old Information (needs to be re-written)
 
 ## Volume mappings
 
@@ -58,15 +191,6 @@ improved performance
 
 
 Then hit http://sub-folder.projectdir.symlocal/ from the host. 
-
-## CLI access
-
-To run things from the CLI, you can run 
-
-`docker exec -it webserver`
-
-This will let you use php-cli against the same project folders
-
 
 # Configuration
 
