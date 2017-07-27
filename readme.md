@@ -78,6 +78,10 @@ services:
         MYSQL_ROOT_PASSWORD: "password"
 ```
 
+## Running php cli in the container
+
+* `export XDEBUG_CONFIG="idekey=netbeans-xdebug"` to enable remote debugging back to your IDE - note that netbeans-xdebug will need to change to your IDE's configuration. 	
+
 ## Windows-specific Information
 
 
