@@ -26,3 +26,11 @@ services:
       #- /c/MySQLDatabases/unzipped:/docker-entrypoint-initdb.d
     environment:
         MYSQL_ROOT_PASSWORD: "password"
+  selenium:
+    image: selenium/standalone-chrome
+    ports:
+      - "4444:4444"
+    volumes:
+      # Example *nix configuration
+      # - /dev/shm:/dev/shm
+
