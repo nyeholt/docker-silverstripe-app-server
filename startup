@@ -36,6 +36,22 @@ create_user_from_directory_owner() {
         echo "[Apache User] Created user for uid ($owner_id), and named it '$owner'"
     fi
 
+    # Ensures the user apache is run at is the same as the project folder
+    tmp=/tmp/$RANDOM
+    {
+        echo "User $owner"              
+        echo "Group $group"             
+        grep -v '^User' /etc/apache2/apache2.conf |
+            grep -v '^Group'
+    } >> "$tmp" &&
+    cat "$tmp" > /etc/apache2/apache2.conf &&
+    rm "$tmp"
+
+    # Not volumes, so need to be chowned                
+    chown -R "$owner:$group" /var/{lock,log,run}/apache*
+    chown -R "$owner:$group" /var/www/dynamic
+
+
     export APACHE_RUN_USER=$owner
     export APACHE_RUN_GROUP=$group
     echo "[Apache User] Set APACHE_RUN_USER to $owner and APACHE_RUN_GROUP to $group"
@@ -50,9 +66,9 @@ create_user_from_directory_owner "${VOLUME_PATH}"
 #   This is to ensure the keys are synced from the host PC
 #   *and* that the permissions can be changed to avoid an error
 #   when using Phing/Composer
-cp /root/.ssh/keys/id_rsa /root/.ssh/id_rsa
-cp /root/.ssh/keys/id_rsa.pub /root/.ssh/id_rsa.pub
-chmod 600 /root/.ssh/id_rsa
-chmod 600 /root/.ssh/id_rsa.pub
+#cp /root/.ssh/keys/id_rsa /root/.ssh/id_rsa
+#cp /root/.ssh/keys/id_rsa.pub /root/.ssh/id_rsa.pub
+#chmod 600 /root/.ssh/id_rsa
+#chmod 600 /root/.ssh/id_rsa.pub
 
 source /etc/apache2/envvars && exec /usr/sbin/apache2 -DFOREGROUND
