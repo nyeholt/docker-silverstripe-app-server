@@ -5,14 +5,15 @@ services:
     ports:
       - "80:80"
       - "8983:8983"
-    #environment:
+    environment:
       # *nix /.ssh/ socket
-      #- SSH_AUTH_SOCK
+      - SSH_AUTH_SOCK
+      - XDEBUG_CONFIG="idekey=netbeans-debug"
     volumes:
       # Example *nix configuration
-      #- /home/your_username_here/www:/var/www/dynamic
-      #- $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK)
-      #- ~/composer-cache:/root/.composer/cache
+      - /home/{user}/www:/var/www/dynamic
+      - /run/user/1000/keyring:/run/user/1000/keyring
+      - ~/composer-cache:/root/.composer/cache
 
       # Example Windows configuration
       #- /c/Users/your_username_here/www:/var/www/dynamic
@@ -25,12 +26,22 @@ services:
       # Sync folder with .sql dumps
       #- /c/MySQLDatabases/unzipped:/docker-entrypoint-initdb.d
     environment:
-        MYSQL_ROOT_PASSWORD: "password"
+        MYSQL_ROOT_PASSWORD: "whatever you like"
+  elastic:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:5.3.3"
+    ports: 
+      - "9200:9200"
+    environment:
+      - "http.host=0.0.0.0"
+      - "transport.host=127.0.0.1"
+      - "xpack.security.enabled=false"
+    volumes:
+      - ~/elastic-data:/usr/share/elasticsearch/data
   selenium:
     image: selenium/standalone-chrome
     ports:
       - "4444:4444"
     volumes:
       # Example *nix configuration
-      # - /dev/shm:/dev/shm
+      - /dev/shm:/dev/shm
 
