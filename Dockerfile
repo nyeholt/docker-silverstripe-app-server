@@ -39,8 +39,6 @@ COPY apache_dynamic_vhosts /etc/apache2/sites-available/000-default.conf
 COPY startup /usr/local/bin/startup
 RUN chmod +x /usr/local/bin/startup
 
-EXPOSE 80
-EXPOSE 443
 
 # Composer - can be a separate layer? 
 ADD install-composer.sh /tmp/
@@ -58,6 +56,17 @@ RUN echo "xdebug.remote_enable=on" >> $XDEBUGINI_PATH \
  && echo "xdebug.remote_autostart=off" >> $XDEBUGINI_PATH \
  && echo "xdebug.remote_handler=dbgp" >> $XDEBUGINI_PATH \
  && echo "xdebug.remote_host="`/sbin/ip route|awk '/default/ { print $3 }'` >> $XDEBUGINI_PATH
+
+RUN pecl install channel://pecl.php.net/xhprof-0.9.4 \
+ && echo "extension=xhprof.so" > /etc/php5/mods-available/xhprof.ini \
+ && php5enmod xhprof
+
+# Inbuilt PHP server
+EXPOSE 8000
+
+# Web
+EXPOSE 80
+EXPOSE 443
 
 # Set start directory
 WORKDIR /var/www/dynamic

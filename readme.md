@@ -78,9 +78,27 @@ services:
         MYSQL_ROOT_PASSWORD: "password"
 ```
 
-## Running php cli in the container
+## Debugging php cli in the container
 
-* `export XDEBUG_CONFIG="idekey=netbeans-xdebug"` to enable remote debugging back to your IDE - note that netbeans-xdebug will need to change to your IDE's configuration. 	
+* `export XDEBUG_CONFIG="idekey=netbeans-xdebug"` to enable remote debugging 
+  back to your IDE - note that netbeans-xdebug will need to change to your 
+  IDE's configuration. 	
+* Alternatively, add `xdebug.idekey=netbeans-xdebug` to 
+  /etc/php5/mods-available/xdebug.ini (where 'netbeans-xdebug' is your IDE key 
+  value) 
+
+
+NOTE: if you experience CLI or web requests hanging, it _may_ be due to xdebug 
+starting and locking out another process (session file lock maybe?). Haven't 
+resolved this yet, in which case you'll need to manually run the 
+`export XDEBUG\_CONFIG etc` on the cli each time you want to debug a CLI app
+
+## XHProf
+
+The xhprof module is installed, but not directly enabled. To do so, grab 
+https://github.com/gajus/xhprof.io and follow its instructions for installing 
+and running. 
+
 
 ## Windows-specific Information
 
